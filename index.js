@@ -35,9 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const username = loginUser.value.trim();
             const password = loginPass.value;
 
-            const passHash = await getSHA256Hash(password);
+            // Check if the configured hash is SHA-256 (64 hex chars), otherwise fall back to plain-text comparison
+            let isPasswordCorrect = false;
+            if (CORRECT_PASS_HASH.length === 64) {
+                const passHash = await getSHA256Hash(password);
+                isPasswordCorrect = (passHash === CORRECT_PASS_HASH);
+            } else {
+                isPasswordCorrect = (password === CORRECT_PASS_HASH);
+            }
 
-            if (username === CORRECT_USER && passHash === CORRECT_PASS_HASH) {
+            if (username === CORRECT_USER && isPasswordCorrect) {
                 localStorage.setItem("brewflow_session", "authorized");
                 if (loginOverlay) loginOverlay.classList.add("hidden");
                 if (appContainer) appContainer.classList.remove("hidden");
