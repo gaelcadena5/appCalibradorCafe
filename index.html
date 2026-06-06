@@ -26,7 +26,36 @@
     <div class="glass-bg-decor decor-1"></div>
     <div class="glass-bg-decor decor-2"></div>
     
-    <div class="app-container">
+    <!-- Login Lock Screen Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card card">
+            <div class="login-header">
+                <span class="login-logo">☕</span>
+                <h2>Acceso Restringido</h2>
+                <p>Ingrese las credenciales del BrewFlow Calibrador</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="input-group">
+                    <label for="login-username">Usuario</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="login-username" required placeholder="barista" autocomplete="username">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                    </div>
+                </div>
+                <div id="login-error-msg" class="login-error-banner hidden">
+                    ⚠️ Usuario o contraseña incorrectos.
+                </div>
+                <button type="submit" class="btn btn-primary btn-large login-btn">Desbloquear</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="app-container hidden" id="app-container">
         <!-- Header -->
         <header class="app-header">
             <div class="logo-area">

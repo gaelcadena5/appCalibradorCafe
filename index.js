@@ -1,5 +1,65 @@
 // BrewFlow Coffee Pouring Calibrator Script
 document.addEventListener("DOMContentLoaded", () => {
+    // --- Login Security Layer ---
+    const CORRECT_USER = 'barista';
+    const CORRECT_PASS_HASH = '3102859ebaa2353c02b91c7783b32ef43820318a7d547e049ae2356d2728ab2b'; // SHA-256 hash of "cafe123"
+
+    const loginOverlay = document.getElementById("login-overlay");
+    const loginForm = document.getElementById("login-form");
+    const loginUser = document.getElementById("login-username");
+    const loginPass = document.getElementById("login-password");
+    const loginError = document.getElementById("login-error-msg");
+    const appContainer = document.getElementById("app-container");
+
+    async function getSHA256Hash(string) {
+        const utf8 = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(bytes => bytes.toString(16).padStart(2, '0')).join('');
+    }
+
+    const checkSession = () => {
+        const session = localStorage.getItem("brewflow_session");
+        if (session === "authorized") {
+            if (loginOverlay) loginOverlay.classList.add("hidden");
+            if (appContainer) appContainer.classList.remove("hidden");
+        }
+    };
+
+    // Check if user is already authenticated
+    checkSession();
+
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = loginUser.value.trim();
+            const password = loginPass.value;
+
+            const passHash = await getSHA256Hash(password);
+
+            if (username === CORRECT_USER && passHash === CORRECT_PASS_HASH) {
+                localStorage.setItem("brewflow_session", "authorized");
+                if (loginOverlay) loginOverlay.classList.add("hidden");
+                if (appContainer) appContainer.classList.remove("hidden");
+                // Resume audio context
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            } else {
+                // Shake card on error
+                const card = document.querySelector(".login-card");
+                if (card) {
+                    card.classList.remove("shake");
+                    void card.offsetWidth; // Trigger reflow
+                    card.classList.add("shake");
+                }
+
+                if (loginError) loginError.classList.remove("hidden");
+                loginPass.value = "";
+            }
+        });
+    }
+
     // --- State Definition ---
     const state = {
         dosis: 15,
