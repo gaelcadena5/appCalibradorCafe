@@ -1,8 +1,8 @@
 // BrewFlow Coffee Pouring Calibrator Script
 document.addEventListener("DOMContentLoaded", () => {
     // --- Login Security Layer ---
-    const CORRECT_USER = 'barista';
-    const CORRECT_PASS_HASH = '3102859ebaa2353c02b91c7783b32ef43820318a7d547e049ae2356d2728ab2b'; // SHA-256 hash of "cafe123"
+    const CORRECT_USER = import.meta.env.VITE_CORRECT_USER || 'barista';
+    const CORRECT_PASS_HASH = import.meta.env.VITE_CORRECT_PASS_HASH || '3102859ebaa2353c02b91c7783b32ef43820318a7d547e049ae2356d2728ab2b'; // Default to "cafe123" hash if not provided
 
     const loginOverlay = document.getElementById("login-overlay");
     const loginForm = document.getElementById("login-form");
