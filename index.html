@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrewFlow - Calibrador de Vertidos de Café</title>
+    <meta name="description" content="Ajusta y calibra dinámicamente tus vertidos de café para lograr la extracción perfecta.">
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e07a5f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BrewFlow">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="glass-bg-decor decor-1"></div>
+    <div class="glass-bg-decor decor-2"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">☕</span>
+                <div>
+                    <h1>BrewFlow</h1>
+                    <p class="tagline">Calibrador de Vertidos de Café de Especialidad</p>
+                </div>
+            </div>
+            <div id="quick-status" class="quick-status">
+                Total: <span id="header-total-liquid">150.0</span> ml
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <main class="app-main">
+            <!-- Left Column: Config -->
+            <section class="config-section card">
+                <h2 class="section-title">1. Configuración básica</h2>
+                
+                <div class="input-group">
+                    <label for="input-dosis">Dosis de Café (g)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-dosis" value="15" min="1" max="100" step="0.5">
+                        <span class="input-unit">g</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="input-ratio">Ratio de Extracción (1:X)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-ratio" value="15" min="5" max="30" step="0.5">
+                        <span class="input-unit">ratio</span>
+                    </div>
+                </div>
+
+                <div class="results-preview">
+                    <div class="result-box">
+                        <span class="result-label">Agua Total</span>
+                        <span class="result-value" id="result-total-water">225.0 ml</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="input-vertidos">Cantidad de Vertidos</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-vertidos" value="5" min="1" max="12" step="1">
+                        <span class="input-unit">vertidos</span>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="switch-label">
+                        <input type="checkbox" id="checkbox-bloom" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <div class="checkbox-text">
+                        <span class="checkbox-title">Fase de Preinfusión (Bloom)</span>
+                        <p class="checkbox-desc">Fija el Vertido 1 a 3x el peso del café (45g) para liberar gases.</p>
+                    </div>
+                </div>
+
+                <div class="actions-group">
+                    <button id="btn-reset-pours" class="btn btn-secondary">Reiniciar Distribución</button>
+                </div>
+            </section>
+
+            <!-- Center Column: Pours Customizer -->
+            <section class="pours-section card">
+                <div class="pours-header">
+                    <h2 class="section-title">2. Distribución de vertidos</h2>
+                    <span class="badge" id="pours-status-badge">Equilibrado</span>
+                </div>
+                <p class="section-desc">Edita cualquier vertido. Los siguientes vertidos se ajustarán automáticamente para alcanzar el agua total.</p>
+                
+                <div id="pours-container" class="pours-list">
+                    <!-- Dinámicamente llenado por JS -->
+                </div>
+
+                <div class="sum-verification-bar" id="sum-bar">
+                    <div class="progress-track">
+                        <div id="sum-progress-bar" class="progress-fill"></div>
+                    </div>
+                    <div class="sum-labels">
+                        <span>Sumatoria de vertidos: <strong id="current-sum-val">225</strong> ml</span>
+                        <span>Objetivo: <strong id="target-sum-val">225</strong> ml</span>
+                    </div>
+                    <div id="error-message" class="error-banner hidden">
+                        ⚠️ ¡La suma de los vertidos fijados excede el total de agua!
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Timer -->
+            <section class="timer-section card">
+                <h2 class="section-title">3. Guía de vertido</h2>
+                
+                <div class="timer-display-wrapper">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" r="85" cx="100" cy="100"/>
+                        <circle id="timer-progress-ring" class="progress-ring__circle" stroke="#e07a5f" stroke-width="8" stroke-dasharray="534" stroke-dashoffset="534" fill="transparent" r="85" cx="100" cy="100"/>
+                    </svg>
+                    <div class="timer-time" id="timer-clock">00:00</div>
+                    <div class="timer-sub" id="timer-status">Listo</div>
+                </div>
+
+                <div id="timer-active-step" class="timer-step-card hidden">
+                    <div class="step-badge" id="step-badge-num">Vertido 1 / 5</div>
+                    <div class="step-target-weight" id="step-target-weight">Objetivo: 45.0 ml</div>
+                    <div class="step-instruction" id="step-instruction">Vierta agua en círculos suaves...</div>
+                </div>
+
+                <div class="timer-controls">
+                    <button id="btn-timer-start" class="btn btn-primary btn-large">Iniciar</button>
+                    <button id="btn-timer-pause" class="btn btn-secondary hidden">Pausar</button>
+                    <button id="btn-timer-reset" class="btn btn-tertiary">Reiniciar</button>
+                </div>
+
+                <div class="timer-settings">
+                    <h3>Configuración de tiempos</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label for="time-pour">Vertido (s)</label>
+                            <input type="number" id="time-pour" value="30" min="5" max="120">
+                        </div>
+                        <div class="setting-item">
+                            <label for="time-wait">Espera (s)</label>
+                            <input type="number" id="time-wait" value="15" min="0" max="120">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BrewFlow &copy; 2026. Diseñado para los amantes del café de especialidad.</p>
+        </footer>
+    </div>
+
+    <!-- Web Application Script -->
+    <script type="module" src="index.js"></script>
+</body>
+</html>
