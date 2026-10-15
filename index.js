@@ -2,7 +2,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Login Security Layer ---
     const CORRECT_USER = import.meta.env.VITE_CORRECT_USER || 'barista';
-    const CORRECT_PASS_HASH = import.meta.env.VITE_CORRECT_PASS_HASH || '3102859ebaa2353c02b91c7783b32ef43820318a7d547e049ae2356d2728ab2b'; // Default to "cafe123" hash if not provided
+    // No default on purpose: anything hardcoded here ends up in the public bundle
+    const CORRECT_PASS_HASH = import.meta.env.VITE_CORRECT_PASS_HASH || '';
 
     const loginOverlay = document.getElementById("login-overlay");
     const loginForm = document.getElementById("login-form");
@@ -35,6 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const username = loginUser.value.trim();
             const password = loginPass.value;
 
+            // Without a configured hash nobody can log in (fail closed)
+            if (!CORRECT_PASS_HASH) {
+                showLoginError("⚠️ Acceso no configurado: falta la variable VITE_CORRECT_PASS_HASH.");
+                return;
+            }
+
             // Check if the configured hash is SHA-256 (64 hex chars), otherwise fall back to plain-text comparison
             let isPasswordCorrect = false;
             if (CORRECT_PASS_HASH.length === 64) {
@@ -53,18 +60,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
             } else {
-                // Shake card on error
-                const card = document.querySelector(".login-card");
-                if (card) {
-                    card.classList.remove("shake");
-                    void card.offsetWidth; // Trigger reflow
-                    card.classList.add("shake");
-                }
-
-                if (loginError) loginError.classList.remove("hidden");
-                loginPass.value = "";
+                showLoginError("⚠️ Usuario o contraseña incorrectos.");
             }
         });
+    }
+
+    function showLoginError(message) {
+        // Shake card on error
+        const card = document.querySelector(".login-card");
+        if (card) {
+            card.classList.remove("shake");
+            void card.offsetWidth; // Trigger reflow
+            card.classList.add("shake");
+        }
+
+        if (loginError) {
+            loginError.textContent = message;
+            loginError.classList.remove("hidden");
+        }
+        loginPass.value = "";
     }
 
     // --- State Definition ---
