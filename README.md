@@ -27,13 +27,17 @@ El acceso está protegido por una pantalla de login. Las credenciales se leen de
 | Variable | Descripción | Por defecto |
 | --- | --- | --- |
 | `VITE_CORRECT_USER` | Usuario | `barista` |
-| `VITE_CORRECT_PASS_HASH` | Hash **SHA-256 en hexadecimal** de la contraseña (64 caracteres). Si el valor no mide 64 caracteres se compara como texto plano. | hash por defecto en `index.js` |
+| `VITE_CORRECT_PASS_HASH` | Hash **SHA-256 en hexadecimal** de la contraseña (64 caracteres). Si el valor no mide 64 caracteres se compara como texto plano. **Obligatoria.** | ninguno |
+
+Hay una plantilla en `.env.example`: cópiala como `.env` y rellena el hash.
 
 Generar el hash de una contraseña:
 
 ```bash
 printf '%s' 'mi-contraseña' | shasum -a 256 | cut -d' ' -f1
 ```
+
+**Sin `VITE_CORRECT_PASS_HASH` no se puede entrar:** la app no trae ninguna contraseña por defecto, el login rechaza cualquier contraseña y muestra el mensaje «Acceso no configurado: falta la variable VITE_CORRECT_PASS_HASH». Si ves ese mensaje en un despliegue, define la variable y vuelve a desplegar.
 
 En Vercel, define las mismas variables en *Project Settings → Environment Variables* y vuelve a desplegar (Vite las incrusta en tiempo de build).
 
